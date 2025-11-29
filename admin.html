@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+
+    <style>
+        body { display: flex; margin: 0; font-family: Arial; }
+        #sidebar { width: 250px; padding: 15px; border-right: 1px solid gray; }
+        #main { flex: 1; padding: 15px; }
+        #navbar select, #navbar button { margin-top: 12px; }
+
+        .card {
+            width: 30%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div id="navbar">
+        <h3>Filters</h3>
+
+        <select id="categoryFilter">
+            <option value="All">All</option>
+            <option value="Auto">Auto</option>
+            <option value="Car">Car</option>
+            <option value="Truck">Truck</option>
+            <option value="Bus">Bus</option>
+        </select>
+
+        <select id="availabilityFilter">
+            <option value="All">All</option>
+            <option value="Available">Available</option>
+            <option value="Unavailable">Unavailable</option>
+        </select>
+
+        <button id="clearFilter">Clear Filter</button>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+        <h3>Add Fleet</h3>
+
+        <input id="reg" type="text" placeholder="Reg No">
+        <br><br>
+
+        <select id="category">
+            <option value="Auto">Auto</option>
+            <option value="Car">Car</option>
+            <option value="Truck">Truck</option>
+            <option value="Bus">Bus</option>
+        </select>
+        <br><br>
+
+        <input id="driver" type="text" placeholder="Driver Name">
+        <br><br>
+
+        <select id="available">
+            <option value="Available">Available</option>
+            <option value="Unavailable">Unavailable</option>
+        </select>
+        <br><br>
+
+        <button id="addBtn">Add Fleet</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main">
+        <h2>Fleet Records</h2>
+        <div id="container"></div>
+    </div>
+
+    <script>
+        let data = [];
+
+        let reg = document.getElementById("reg");
+        let cat = document.getElementById("category");
+        let driver = document.getElementById("driver");
+        let available = document.getElementById("available");
+        let container = document.getElementById("container");
+
+        document.getElementById("addBtn").addEventListener("click", function () {
+            if (!reg.value || !driver.value) {
+                alert("All fields are required");
+                return;
+            }
+
+            let obj = {
+                reg: reg.value,
+                category: cat.value,
+                driver: driver.value,
+                available: available.value
+            };
+
+            data.push(obj);
+            reg.value = "";
+            driver.value = "";
+
+            render(data);
+        });
+
+        function render(arr) {
+            container.innerHTML = "";
+
+            arr.forEach((el, index) => {
+                let card = document.createElement("div");
+                card.className = "card";
+
+                card.innerHTML = `
+                    <img src="https://coding-platform.s3.amazonaws.com/dev/lms/tickets/5e80fcb6-3f8e-480c-945b-30a5359eb40e/JNmYjkVr3WOjsrbu.png"width="100%">
+                    <h4>${el.reg}</h4>
+                    <p>Category: ${el.category}</p>
+                    <p>Driver: ${el.driver}</p>
+                    <p>Status: ${el.available}</p>
+                    <button onclick="updateDriver(${index})">Update Driver</button><br>
+                    <button onclick="toggleStatus(${index})">Change Availability</button><br>
+                    <button onclick="deleteVehicle(${index})">Delete</button>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function updateDriver(i) {
+            let name = prompt("Enter new driver name:");
+
+            if (!name || name.trim() === "") {
+                alert("Driver name cannot be empty.");
+                return;
+            }
+
+            data[i].driver = name;
+            render(data);
+        }
+
+        function toggleStatus(i) {
+            data[i].available =
+                data[i].available === "Available"
+                    ? "Unavailable"
+                    : "Available";
+
+            render(data);
+        }
+
+        function deleteVehicle(i) {
+            let c = confirm("Are you sure?");
+            if (c) {
+                data.splice(i, 1);
+                render(data);
+            }
+        }
+
+        // FILTERS
+        document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+        document.getElementById("availabilityFilter").addEventListener("change", applyFilters);
+
+        function applyFilters() {
+            let catF = document.getElementById("categoryFilter").value;
+            let availF = document.getElementById("availabilityFilter").value;
+
+            let filtered = data.filter(item => {
+                let f1 = (catF === "All" || item.category === catF);
+                let f2 = (availF === "All" || item.available === availF);
+                return f1 && f2;
+            });
+
+            render(filtered);
+        }
+
+        document.getElementById("clearFilter").addEventListener("click", () => {
+            document.getElementById("categoryFilter").value = "All";
+            document.getElementById("availabilityFilter").value = "All";
+            render(data);
+        });
+    </script>
+
+</body>
+</html>
